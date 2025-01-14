@@ -1,0 +1,75 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+
+<h3>To-Do App</h3>
+
+<div class="mb-3">
+    <input type="text" @bind="NewTask" placeholder="Add a new task" class="form-control" />
+    <button class="btn btn-primary mt-2" @onclick="AddTask">Add Task</button>
+</div>
+
+@if (TasksList.Any())
+{
+    <ul class="list-group">
+        @foreach (var task in TasksList)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @if (task.IsEditing)
+                {
+                    <input type="text" @bind="task.Title" class="form-control" />
+                    <button class="btn btn-success btn-sm ms-2" @onclick="() => SaveTask(task)">Save</button>
+                }
+                else
+                {
+                    <span>@task.Title</span>
+                    <div>
+                        <button class="btn btn-secondary btn-sm me-2" @onclick="() => EditTask(task)">Edit</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => RemoveTask(task)">Remove</button>
+                    </div>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No tasks available. Add a new one!</p>
+}
+
+@code {
+    private string NewTask { get; set; } = string.Empty;
+    private List<TaskItem> TasksList { get; set; } = new();
+
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(NewTask))
+        {
+            TasksList.Add(new TaskItem { Title = NewTask });
+            NewTask = string.Empty;
+        }
+    }
+
+    private void RemoveTask(TaskItem task)
+    {
+        
+    }
+
+    private void EditTask(TaskItem task)
+    {
+        task.IsEditing = true;
+        
+    }
+
+    private void SaveTask(TaskItem task)
+    {
+        task.IsEditing = false;
+        TasksList.Add(task);
+    }
+
+    private class TaskItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public bool IsEditing { get; set; } = false;
+    }
+}
