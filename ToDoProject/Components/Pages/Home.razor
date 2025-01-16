@@ -1,12 +1,18 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary mb-4" @onclick="IncrementCount">Click me</button>
 
 <h3>To-Do App</h3>
 
-<div class="mb-3">
-    <input type="text" @bind="NewTask" placeholder="Add a new task" class="form-control" />
-    <button class="btn btn-primary mt-2" @onclick="AddTask">Add Task</button>
+<!--Update: Input field button allows for tasks to appear inline-->
+<div class="input-group mb-3">
+    <input type="text" @bind="NewTask" placeholder="Add new tasks (separately with commas)" class="form-control" />
+    <button class="btn btn-primary" @onclick="AddTask">Add Task</button>
 </div>
 
 @if (TasksList.Any())
@@ -24,6 +30,7 @@
                 {
                     <span>@task.Title</span>
                     <div>
+                        <button class="btn btn-primary btn-sm me-2" @onclick="() => CloneTask(task)">Clone</button>
                         <button class="btn btn-secondary btn-sm me-2" @onclick="() => EditTask(task)">Edit</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => RemoveTask(task)">Remove</button>
                     </div>
@@ -38,38 +45,72 @@ else
 }
 
 @code {
+    private int currentCount = 0;
     private string NewTask { get; set; } = string.Empty;
     private List<TaskItem> TasksList { get; set; } = new();
 
+//Update: counter component added
+private void IncrementCount()
+{
+    currentCount++;
+}
+
+//Update: removal of whitespace
     private void AddTask()
     {
         if (!string.IsNullOrWhiteSpace(NewTask))
         {
-            TasksList.Add(new TaskItem { Title = NewTask });
+            TasksList.Add(new TaskItem { Title = NewTask.Trim() });
             NewTask = string.Empty;
         }
     }
 
+//InjectionUpdate: implement the duplication of task in the list when button is clicked
+    private void CloneTask(TaskItem task)
+        {
+            if (task != null)
+            {
+                TaskItem clonedTask = new TaskItem
+                {
+                    Title = task.Title,
+                    IsEditing = false
+                };
+                TasksList.Add(clonedTask);
+            }
+        }
+
+//Observation: missing method to initialize removal of tasks
+//Update: implemented task removal from task list and added validation
     private void RemoveTask(TaskItem task)
     {
-        
+            if (task != null)
+            {
+                TasksList.Remove(task);
+            }
     }
 
     private void EditTask(TaskItem task)
     {
+        if (task != null)
+        {
         task.IsEditing = true;
-        
+        }
     }
 
+//ObservationalUpdate: duplication of task list removed
+//Resolution: allows for user to save tasks
     private void SaveTask(TaskItem task)
     {
-        task.IsEditing = false;
-        TasksList.Add(task);
+        if (task != null && !string.IsNullOrWhiteSpace(task.Title))
+        {
+            task.IsEditing = false;
+        }
     }
-
     private class TaskItem
     {
         public string Title { get; set; } = string.Empty;
         public bool IsEditing { get; set; } = false;
     }
 }
+
+
